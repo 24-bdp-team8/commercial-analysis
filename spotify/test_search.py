@@ -83,5 +83,5 @@ df = pd.DataFrame(
     columns=["track_id", "track_name", "track_artist", "track_url"]
     # "acousticness", "danceability", "energy", "instrumentalness", "key", "liveness", "loudness", "mode", "speechiness", "tempo", "valence"
 )
-df.to_csv(f"../sample_data/tracks_{year}.csv", index=False)
-df.to_parquet(f"../sample_data/tracks_{year}.parquet", index=False)
+df.to_csv(f"sample_data/tracks_{year}.csv", index=False)
+df.to_parquet(f"sample_data/tracks_{year}.parquet", index=False)
