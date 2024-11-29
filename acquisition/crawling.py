@@ -6,12 +6,19 @@ import time
 import glob
 import logging
 
-DOWNLOAD_DIRECTORY = os.path.join(os.getcwd(), "downloads") # 다운로드 경로
+LOG_DIR = os.path.join(os.getcwd(), "logs") # 로그 폴더 경로
+LOG_FILE = os.path.join(LOG_DIR, "crawling_scheduler.log")
+DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads") # 다운로드 경로
 
-def setup_download_directory():
-    if os.path.exists(DOWNLOAD_DIRECTORY):
-        shutil.rmtree(DOWNLOAD_DIRECTORY) # 기존 다운로드 폴더 삭제
-        os.makedirs(DOWNLOAD_DIRECTORY) # 다운로드 폴더 생성
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s %(message)s"
+)
+
+def setup_download_dir():
+    if not os.path.exists(DOWNLOAD_DIR):
+        os.makedirs(DOWNLOAD_DIR) # 다운로드 폴더 생성
 
 def setup_chrome_options(chrome_options):
     chrome_options.add_argument("--no-sandbox")
@@ -19,14 +26,14 @@ def setup_chrome_options(chrome_options):
     chrome_options.add_argument("--headless") 
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_experimental_option("prefs", {
-        "download.default_directory": DOWNLOAD_DIRECTORY,
+        "download.default_directory": DOWNLOAD_DIR,
         "download.prompt_for_download": False
     })
 
     return chrome_options
 
 def setup_webdriver():
-    setup_download_directory() # 다운로드 폴더 설정
+    setup_download_dir() # 다운로드 폴더 설정
 
     chrome_options = webdriver.ChromeOptions()
     setup_chrome_options(chrome_options) # 크롬 옵션 설정
@@ -36,7 +43,7 @@ def setup_webdriver():
     return driver
 
 def wait_for_download():
-    file = os.path.join(DOWNLOAD_DIRECTORY, "소상공인시장진흥공단_상가(상권)정보_*.zip")
+    file = os.path.join(DOWNLOAD_DIR, "소상공인시장진흥공단_상가(상권)정보_*.zip")
     while not glob.glob(file):
         time.sleep(1)
 
@@ -55,7 +62,7 @@ def main():
         first_element_download_button.click()
 
         wait_for_download()
-        file = os.listdir(DOWNLOAD_DIRECTORY)[0]
+        file = os.listdir(DOWNLOAD_DIR)[0]
 
         logging.info(f">>>> 파일 다운로드: {file}")
 

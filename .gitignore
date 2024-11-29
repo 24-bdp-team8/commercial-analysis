@@ -1,4 +1,5 @@
 .env
 .cache
 .DS_Store
-acquisition/downloads/*
+acquisition/downloads/*.zip
+acquisition/logs/*.log
