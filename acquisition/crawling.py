@@ -3,7 +3,8 @@ from selenium.webdriver.common.by import By
 import os
 import shutil
 import time
-import glob 
+import glob
+import logging
 
 DOWNLOAD_DIRECTORY = os.path.join(os.getcwd(), "downloads") # 다운로드 경로
 
@@ -54,11 +55,12 @@ def main():
         wait_for_download()
         file = os.listdir(DOWNLOAD_DIRECTORY)[0]
 
-        print(f">>>> 파일 다운로드: {file}")
+        logging.info(f">>>> 파일 다운로드: {file}")
 
     except Exception as e:
-        print(f">>>> 파일 다운로드 실패")
-        print(str(e))
+        logging.error(f">>>> 파일 다운로드 실패")
+        logging.error(str(e))
+        
     finally:
         driver.quit()
 
