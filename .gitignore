@@ -1,2 +1,4 @@
 .env
 .cache
+.DS_Store
+acquisition/downloads/*
