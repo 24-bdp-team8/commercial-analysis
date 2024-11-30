@@ -3,4 +3,3 @@
 .DS_Store
 acquisition/downloads/*
 acquisition/logs/*.log
-acquisition/data/*.parquet
