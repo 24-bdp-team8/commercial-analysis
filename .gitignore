@@ -1,5 +1,6 @@
 .env
 .cache
 .DS_Store
-acquisition/downloads/*.zip
+acquisition/downloads/*
 acquisition/logs/*.log
+acquisition/data/*.parquet

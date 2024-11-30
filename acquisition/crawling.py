@@ -1,77 +1,131 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import pandas as pd
 import os
 import shutil
 import time
 import glob
 import logging
+import zipfile
 
-LOG_DIR = os.path.join(os.getcwd(), "logs") # 로그 폴더 경로
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "crawling_scheduler.log")
-DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads") # 다운로드 경로
+DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
+DATA_DIR = os.path.join(os.getcwd(), "data")
 
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
-    format="%(asctime)s %(message)s"
+    format="%(asctime)s - %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
+
 
 def setup_download_dir():
     if not os.path.exists(DOWNLOAD_DIR):
-        os.makedirs(DOWNLOAD_DIR) # 다운로드 폴더 생성
+        os.makedirs(DOWNLOAD_DIR)
+
+
+def setup_data_dir():
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
+
 
 def setup_chrome_options(chrome_options):
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--headless") 
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_experimental_option("prefs", {
-        "download.default_directory": DOWNLOAD_DIR,
-        "download.prompt_for_download": False
-    })
+    chrome_options.add_experimental_option(
+        "prefs",
+        {
+            "download.default_directory": DOWNLOAD_DIR,
+            "download.prompt_for_download": False,
+        },
+    )
 
     return chrome_options
 
+
 def setup_webdriver():
-    setup_download_dir() # 다운로드 폴더 설정
-
     chrome_options = webdriver.ChromeOptions()
-    setup_chrome_options(chrome_options) # 크롬 옵션 설정
+    setup_chrome_options(chrome_options)
 
-    driver = webdriver.Chrome(options=chrome_options) # 웹드라이버 생성
+    driver = webdriver.Chrome(options=chrome_options)
 
     return driver
+
 
 def wait_for_download():
     file = os.path.join(DOWNLOAD_DIR, "소상공인시장진흥공단_상가(상권)정보_*.zip")
     while not glob.glob(file):
         time.sleep(1)
 
+    return glob.glob(file)[0]
+
+
+def convert_to_parquet(zip_file):
+    setup_data_dir()
+
+    try:
+        with zipfile.ZipFile(os.path.join(DOWNLOAD_DIR, zip_file), "r") as file:
+            file.extractall(DOWNLOAD_DIR)
+
+        csv_files = glob.glob(os.path.join(DOWNLOAD_DIR, "*.csv"))
+
+        for csv_file in csv_files:
+            df = pd.read_csv(csv_file, encoding="utf-8", low_memory=False)
+            df["층정보"] = df["층정보"].astype(str)
+
+            title = os.path.basename(csv_file).split("_")[2]
+            parquet_filename = f"{title}.parquet"
+            parquet_file = os.path.join(DATA_DIR, parquet_filename)
+
+            df.to_parquet(parquet_file, engine="pyarrow")
+
+            logging.info(f">> 파일 변환: {os.path.basename(parquet_filename)}")
+
+    except Exception as e:
+        logging.error(">> 파일 변환 실패")
+        logging.error(str(e))
+
+
+def clean_up():
+    shutil.rmtree(DOWNLOAD_DIR)
+
+
 def main():
     try:
+        setup_download_dir()
         driver = setup_webdriver()
         driver.get("https://www.data.go.kr/index.do")
 
-        search_input = driver.find_element(By.CSS_SELECTOR, "input#keyword") # 검색 입력
+        search_input = driver.find_element(By.CSS_SELECTOR, "input#keyword")
         search_input.send_keys("소상공인시장진흥공단_상가(상권)정보")
 
-        search_button = driver.find_element(By.CSS_SELECTOR, "button.btn-search") # 검색 버튼
+        search_button = driver.find_element(By.CSS_SELECTOR, "button.btn-search")
         search_button.click()
-    
-        first_element_download_button = driver.find_element(By.CSS_SELECTOR, "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a") # 다운로드 버튼
+
+        first_element_download_button = driver.find_element(
+            By.CSS_SELECTOR,
+            "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a",
+        )
         first_element_download_button.click()
 
-        wait_for_download()
-        file = os.listdir(DOWNLOAD_DIR)[0]
+        file = wait_for_download()
+        logging.info(f">> 파일 다운로드: {file}")
 
-        logging.info(f">>>> 파일 다운로드: {file}")
+        return file
 
     except Exception as e:
-        logging.error(f">>>> 파일 다운로드 실패")
+        logging.error(f">> 파일 다운로드 실패")
         logging.error(str(e))
-        
+
     finally:
         driver.quit()
 
+
 if __name__ == "__main__":
-    main()
+    zip_file = main()
+    convert_to_parquet(zip_file)
+    clean_up()
