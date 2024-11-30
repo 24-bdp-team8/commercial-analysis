@@ -3,3 +3,4 @@
 .DS_Store
 acquisition/downloads/*
 acquisition/logs/*.log
+preprocessing/preprocessed_data/
