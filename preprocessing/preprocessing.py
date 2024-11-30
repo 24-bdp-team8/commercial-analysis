@@ -13,16 +13,17 @@ import glob
 import logging
 
 # 경로 설정
-LOG_DIR = os.path.join(os.getcwd(), "preprocessing_logs")
-LOG_FILE = os.path.join(LOG_DIR, "preprocessing.log")
-DATA_DIR = os.path.join(os.getcwd(), "acquisition", "data")
-OUTPUT_DIR = os.path.join(os.getcwd(), "preprocessed_data")
+LOG_DIR = os.path.join(os.getcwd(), "preprocessing", "preprocessing_logs")  # 로그 폴더
+LOG_FILE = os.path.join(LOG_DIR, "preprocessing.log")  # 로그 파일 경로
+DATA_DIR = os.path.join(os.getcwd(), "acquisition", "data")  # 데이터 폴더
+OUTPUT_DIR = os.path.join(os.getcwd(), "preprocessing", "preprocessed_data")  # 출력 폴더
 
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
+    encoding="utf-8",  # 인코딩 설정
 )
 
 # 1. 데이터 로드 함수
