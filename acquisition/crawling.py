@@ -40,10 +40,17 @@ def setup_data_dir():
 
 
 def setup_chrome_options(chrome_options):
+    chrome_options.binary_location = "/usr/bin/chromium-browser"
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-setuid-sandbox")
+    chrome_options.add_argument("--single-process")
+    chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--disable-popup-blocking")
     chrome_options.add_experimental_option(
         "prefs",
         {
@@ -58,8 +65,8 @@ def setup_chrome_options(chrome_options):
 def setup_webdriver():
     chrome_options = webdriver.ChromeOptions()
     setup_chrome_options(chrome_options)
-    service = Service(ChromeDriverManager().install())
-    # service = Service("/usr/bin/chromedriver")
+    # service = Service(ChromeDriverManager().install())
+    service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
@@ -68,6 +75,7 @@ def setup_webdriver():
 def wait_for_download():
     file = os.path.join(DOWNLOAD_DIR, "소상공인시장진흥공단_상가(상권)정보_*.zip")
     while not glob.glob(file):
+        print("waiting")
         time.sleep(1)
 
     return glob.glob(file)[0]
@@ -109,8 +117,8 @@ def upload_to_hdfs():
         result = subprocess.run(command, capture_output=True, text=True)
 
         if result.returncode == 0:
-            logging.info(f">> HDFS 업로드: {DATA_DIR} > {HDFS_}")
-            print(f">> HDFS 업로드: {DATA_DIR} > {HDFS_}")
+            logging.info(f">> HDFS 업로드: {DATA_DIR} > {HDFS_PATH}")
+            print(f">> HDFS 업로드: {DATA_DIR} > {HDFS_PATH}")
         else:
             logging.error(f">> HDFS 업로드 실패")
             print(f">> HDFS 업로드 실패")
@@ -133,18 +141,25 @@ def main():
     try:
         driver.get("https://www.data.go.kr/index.do")
 
-        search_input = driver.find_element(By.CSS_SELECTOR, "input#keyword")
+        search_input = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "input#keyword"))
+        )
         search_input.send_keys("소상공인시장진흥공단_상가(상권)정보")
 
-        search_button = driver.find_element(By.CSS_SELECTOR, "button.btn-search")
+        search_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-search"))
+        )
         search_button.click()
 
-        first_element_download_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a")
+        first_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (
+                    By.CSS_SELECTOR,
+                    "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a",
+                )
             )
         )
-        first_element_download_button.click()
+        first_element.click()
 
         file = wait_for_download()
         logging.info(f">> 파일 다운로드: {file}")
