@@ -124,9 +124,10 @@ def clean_up():
 
 
 def main():
+    setup_download_dir()
+    driver = setup_webdriver()
+
     try:
-        setup_download_dir()
-        driver = setup_webdriver()
         driver.get("https://www.data.go.kr/index.do")
 
         search_input = driver.find_element(By.CSS_SELECTOR, "input#keyword")
