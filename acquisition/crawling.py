@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import os
 import shutil
@@ -53,8 +56,8 @@ def setup_chrome_options(chrome_options):
 def setup_webdriver():
     chrome_options = webdriver.ChromeOptions()
     setup_chrome_options(chrome_options)
-
-    driver = webdriver.Chrome(options=chrome_options)
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
 
