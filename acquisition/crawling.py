@@ -12,6 +12,7 @@ LOG_DIR = os.path.join(os.getcwd(), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "crawling_scheduler.log")
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads")
 DATA_DIR = os.path.join(os.getcwd(), "data")
+HDFS_PATH = "/user/maria_dev/team8"
 
 logging.basicConfig(
     filename=LOG_FILE,
@@ -90,6 +91,25 @@ def convert_to_parquet(zip_file):
         logging.error(str(e))
 
 
+def upload_to_hdfs():
+    try:
+        subprocess.run(
+            ["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH}/data"], capture_output=True
+        )
+        command = ["hdfs", "dfs", "-put", DATA_DIR, HDFS_PATH]
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            logging.info(f">> HDFS 업로드: {DATA_DIR} > {HDFS_}")
+        else:
+            logging.error(f">> HDFS 업로드 실패")
+            logging.error(result.stderr)
+
+    except Exception as e:
+        logging.error(">> HDFS 업로드 실패")
+        logging.error(str(e))
+
+
 def clean_up():
     shutil.rmtree(DOWNLOAD_DIR)
 
@@ -128,4 +148,5 @@ def main():
 if __name__ == "__main__":
     zip_file = main()
     convert_to_parquet(zip_file)
+    upload_to_hdfs()
     clean_up()
