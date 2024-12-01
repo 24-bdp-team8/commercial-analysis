@@ -28,6 +28,26 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+name_mapping = {
+    "서울": "seoul",
+    "부산": "busan",
+    "대구": "daegu",
+    "인천": "incheon",
+    "광주": "gwangju",
+    "대전": "daejeon",
+    "울산": "ulsan",
+    "세종": "sejong",
+    "경기": "gyeonggi",
+    "강원": "gangwon",
+    "충북": "chungbuk",
+    "충남": "chungnam",
+    "전북": "jeonbuk",
+    "전남": "jeonnam",
+    "경북": "gyeongbuk",
+    "경남": "gyeongnam",
+    "제주": "jeju",
+}
+
 
 def setup_download_dir():
     if not os.path.exists(DOWNLOAD_DIR):
@@ -48,7 +68,6 @@ def setup_chrome_options(chrome_options):
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-setuid-sandbox")
-    chrome_options.add_argument("--single-process")
     chrome_options.add_argument("--ignore-certificate-errors")
     chrome_options.add_argument("--disable-popup-blocking")
     chrome_options.add_experimental_option(
@@ -95,7 +114,8 @@ def convert_to_parquet(zip_file):
             df["층정보"] = df["층정보"].astype(str)
 
             title = os.path.basename(csv_file).split("_")[2]
-            parquet_filename = f"{title}.parquet"
+            english_title = name_mapping.get(title, title)
+            parquet_filename = f"{english_title}.parquet"
             parquet_file = os.path.join(DATA_DIR, parquet_filename)
 
             df.to_parquet(parquet_file, engine="pyarrow")
