@@ -8,6 +8,7 @@ import time
 import glob
 import logging
 import zipfile
+import subprocess
 
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "crawling_scheduler.log")
@@ -86,9 +87,10 @@ def convert_to_parquet(zip_file):
             df.to_parquet(parquet_file, engine="pyarrow")
 
             logging.info(f">> 파일 변환: {os.path.basename(parquet_filename)}")
-
+            print(f">> 파일 변환: {os.path.basename(parquet_filename)}")
     except Exception as e:
         logging.error(">> 파일 변환 실패")
+        print(">> 파일 변환 실패")
         logging.error(str(e))
 
 
@@ -102,12 +104,15 @@ def upload_to_hdfs():
 
         if result.returncode == 0:
             logging.info(f">> HDFS 업로드: {DATA_DIR} > {HDFS_}")
+            print(f">> HDFS 업로드: {DATA_DIR} > {HDFS_}")
         else:
             logging.error(f">> HDFS 업로드 실패")
+            print(f">> HDFS 업로드 실패")
             logging.error(result.stderr)
 
     except Exception as e:
         logging.error(">> HDFS 업로드 실패")
+        print(">> HDFS 업로드 실패")
         logging.error(str(e))
 
 
@@ -135,11 +140,13 @@ def main():
 
         file = wait_for_download()
         logging.info(f">> 파일 다운로드: {file}")
+        print(f">> 파일 다운로드: {file}")
 
         return file
 
     except Exception as e:
-        logging.error(f">> 파일 다운로드 실패")
+        logging.error(">> 파일 다운로드 실패")
+        print(">> 파일 다운로드 실패")
         logging.error(str(e))
 
     finally:

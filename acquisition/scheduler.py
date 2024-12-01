@@ -2,6 +2,7 @@
 import subprocess
 import logging
 import os
+import subprocess
 
 LOG_DIR = os.path.join(os.getcwd(), "logs")  # 로그 폴더 경로
 LOG_FILE = os.path.join(LOG_DIR, "crawling_scheduler.log")
