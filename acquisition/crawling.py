@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -137,9 +139,10 @@ def main():
         search_button = driver.find_element(By.CSS_SELECTOR, "button.btn-search")
         search_button.click()
 
-        first_element_download_button = driver.find_element(
-            By.CSS_SELECTOR,
-            "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a",
+        first_element_download_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, "#fileDataList > div.result-list > ul > li:nth-child(1) > div.bottom-area > a")
+            )
         )
         first_element_download_button.click()
 
