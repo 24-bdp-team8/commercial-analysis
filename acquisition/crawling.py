@@ -57,6 +57,7 @@ def setup_webdriver():
     chrome_options = webdriver.ChromeOptions()
     setup_chrome_options(chrome_options)
     service = Service(ChromeDriverManager().install())
+    # service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
