@@ -83,11 +83,7 @@ def preprocess_data(df):
     logging.info("필요 없는 컬럼 제거 완료")
 
     df = df.fillna({
-        '지점명': '본점',
-        '지번본번지': 0,
-        '도로명코드': 0,
-        '건물본번지': 0,
-        '구우편번호': 0
+        '지점명': '본점'
     })
     df = df.dropna(subset=['상호명', '표준산업분류코드', '표준산업분류명'])
     logging.info("결측값 처리 완료")
