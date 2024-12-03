@@ -124,7 +124,9 @@ def preprocess_data(df):
 
     df = df.withColumn(
         "상권상태",
-        when((col("위도") > 37.5) & (col("경도") > 126.9), lit("중심상권")).otherwise(lit("기타")),
+        when((col("위도") > 37.5) & (col("경도") > 126.9), lit("중심상권")).otherwise(
+            lit("기타")
+        ),
     )
     logging.info("상권 상태 분류 완료")
 
@@ -155,7 +157,9 @@ def main():
         clear_hdfs_directory(HDFS_OUTPUT_DIR)
 
         # HDFS에 전처리 데이터 저장
-        processed_df.coalesce(1).write.mode("overwrite").parquet(HDFS_OUTPUT_DIR)
+        processed_df.coalesce(1).write.mode("overwrite").option(
+            "encoding", "UTF-8"
+        ).parquet(HDFS_OUTPUT_DIR)
         logging.info(f"HDFS에 데이터 저장 완료: {HDFS_OUTPUT_DIR}")
     except Exception as e:
         logging.error(f"오류 발생: {str(e)}")
